@@ -6,6 +6,10 @@ from settings import *
 
 from algorithms.BFS import BFS
 from algorithms.DFS import DFS
+from algorithms.Dijkstra import Dijkstra
+from algorithms.GBFS import GreedyBFS
+from algorithms.AStar import AStar
+from algorithms.JPS import JPS
 
 # Initialize Pygame
 pygame.init()
@@ -19,8 +23,12 @@ board.set_start(0, 0)
 board.set_end(BOARD_SIZE - 1, BOARD_SIZE - 1)
 
 # Algorithm
-# algorithm = BFS(board)
+algorithm = BFS(board)
 algorithm = DFS(board)
+algorithm = Dijkstra(board)
+algorithm = GreedyBFS(board)
+algorithm = AStar(board)
+algorithm = JPS(board)
 
 # Main loop
 running = True

@@ -4,6 +4,7 @@ class DFS:
         self.stack = [((self.board.start), [self.board.start], 1)]  # Use a list as a stack
         self.visited = set([self.board.start])
         self.end = board.end
+        self.end
         self.order = 1
     
     def step(self):
