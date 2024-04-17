@@ -50,7 +50,6 @@ class GreedyBFS:
             if self.board.is_valid_position(next_x, next_y) and next_pos not in self.visited:
                 self.visited.add(next_pos)
                 heapq.heappush(self.priority_queue, (self.heuristic(next_pos), next_pos, path + [next_pos]))
-                # Optionally, mark cells being considered for visitation
                 self.board.set_cell_state(next_x, next_y, self.board.VISITING, None)  # VISITING without order
 
         return False

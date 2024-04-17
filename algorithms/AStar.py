@@ -59,7 +59,6 @@ class AStar:
                 new_h_cost = self.heuristic(next_pos)
                 f_cost = new_g_cost + new_h_cost
                 heapq.heappush(self.priority_queue, (f_cost, new_h_cost, next_pos, path + [next_pos]))
-                # Optionally, mark cells being considered for visitation
                 self.board.set_cell_state(next_x, next_y, self.board.VISITING, None)  # VISITING without order
 
         return False

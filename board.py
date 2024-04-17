@@ -5,61 +5,55 @@ from settings import *
 class Board:
     EMPTY = 0
     OBSTACLE = 1
-    START = 2       # Starting cell
-    END = 3         # Ending cell
+    START = 2
+    END = 3
     VISITING = 4    # Cells that are in the queue to be visited
     VISITED = 5     # Cells that have been visited
     PATH = 6        # Cells that are part of the path
 
-    def __init__(self, size):
+    def __init__(self, size, start, end):
         self.size = size
-        self.grid = [[(self.EMPTY, None) for _ in range(size)] for _ in range(size)]  # Now stores a tuple of state and order
-        self.start = None
-        self.end = None
-        self.step_font = pygame.font.Font(None, 24)  # Initialize font; specify your font path here if not using default
-        self.message_font = pygame.font.Font(None, 30)  # Initialize font; specify your font path here if not using default
+        self.grid = [[self.EMPTY for _ in range(size[0])] for _ in range(size[1])]
+        self.set_cell_state(*start, self.START)
+        self.set_cell_state(*end, self.END)
         self.path = None
+        self.start = start
+        self.end = end
 
-    def set_start(self, x, y):
-        if 0 <= x < self.size and 0 <= y < self.size:
-            self.start = (x, y)
-            self.grid[y][x] = (self.START, None)
-
-    def set_end(self, x, y):
-        if 0 <= x < self.size and 0 <= y < self.size:
-            self.end = (x, y)
-            self.grid[y][x] = (self.END, None)
-
-    def set_obstacle(self, x, y):
-        if 0 <= x < self.size and 0 <= y < self.size:
-            self.grid[y][x] = (self.OBSTACLE, None)
-
-    def set_random_obstacles(self, n):
-        for _ in range(n):
-            x, y = (random.randint(0, self.size - 1), random.randint(0, self.size - 1))
-            self.set_obstacle(x, y)
-
-    def set_cell_state(self, x, y, state, order=None):
-        if 0 <= x < self.size and 0 <= y < self.size:
-            self.grid[y][x] = (state, order)
+    def set_cell_state(self, x, y, state):
+        if 0 <= x < self.size[0] and 0 <= y < self.size[1]:
+            self.grid[y][x] = state
+        else:
+            raise ValueError(f"Invalid cell position: ({x}, {y})")
 
     def get_cell_state(self, x, y):
-        if 0 <= x < self.size and 0 <= y < self.size:
+        if 0 <= x < self.size[0] and 0 <= y < self.size[1]:
             return self.grid[y][x]
         return None
 
-    def is_obstacle(self, x, y):
-        if 0 <= x < self.size and 0 <= y < self.size:
-            return self.grid[y][x] == (self.OBSTACLE, None)
-    
+    def set_random_obstacles(self, density, seed=None):
+        if seed is not None:
+            random.seed(seed)
+        count = 0
+        n = int(self.size[0] * self.size[1] * density)
+        while count < n:
+            x, y = (random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+            if self.get_cell_state(x, y) == self.EMPTY:
+                self.set_cell_state(x, y, self.OBSTACLE)
+                count += 1
+
     def is_valid_position(self, x, y):
-        return 0 <= x < self.size and 0 <= y < self.size and not self.is_obstacle(x, y)
-    
+        if 0 <= x < self.size[0] and 0 <= y < self.size[1]:
+            return self.get_cell_state(x, y) != self.OBSTACLE
+        return False
+
     def draw(self, screen):
-        for y in range(self.size):
-            for x in range(self.size):
-                rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                state, order = self.get_cell_state(x, y)  # Unpack state and order
+        cell_x = WINDOW_SIZE // self.size[0]
+        cell_y = WINDOW_SIZE // self.size[1]
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                rect = pygame.Rect(x * cell_x, y * cell_y, cell_x, cell_y)
+                state = self.get_cell_state(x, y)
                 color = BLACK  # Default color
 
                 # Define colors based on state
@@ -79,34 +73,27 @@ class Board:
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, WHITE, rect, 1)
 
-                if order is not None:
-                    order_text = self.step_font.render(str(order), True, WHITE)
-                    text_rect = order_text.get_rect(center=(x * TILE_SIZE + TILE_SIZE // 2, y * TILE_SIZE + TILE_SIZE // 2))
-                    screen.blit(order_text, text_rect)
-
     def mark_path(self, path):
         for x, y in path:
             self.set_cell_state(x, y, self.PATH)
 
     def render_message(self, message, screen):
-        # Container dimensions and position
-        container_width = 130  # Adjust the width as needed
-        container_height = 50  # Adjust the height as needed
+        container_width = 130
+        container_height = 50
         container_x = (WINDOW_SIZE - container_width) // 2
         container_y = (WINDOW_SIZE - container_height) // 2
 
         # Container color
-        container_color = (50, 50, 50)  # Dark gray (or choose another dark color)
+        container_color = DARK_GRAY
 
         # Text color
-        text_color = (255, 255, 255)  # White
+        text_color = WHITE
 
         # Draw the container rectangle
         pygame.draw.rect(screen, container_color, [container_x, container_y, container_width, container_height])
 
         # Render the message text
-        text = self.message_font.render(message, True, text_color)
+        text = pygame.font.SysFont(None, 24).render(message, True, text_color)
         text_rect = text.get_rect(center=(WINDOW_SIZE // 2, WINDOW_SIZE // 2))
 
-        # Blit the text onto the screen, centered within the container
         screen.blit(text, text_rect)

@@ -44,10 +44,8 @@ class Dijkstra:
             next_x, next_y = x + dx, y + dy
             next_pos = (next_x, next_y)
             if self.board.is_valid_position(next_x, next_y) and next_pos not in self.visited:
-                # Assuming each move has a cost of 1, adjust if necessary
                 new_cost = cost + 1
                 heapq.heappush(self.priority_queue, (new_cost, next_pos, path + [next_pos]))
-                # Optionally, you could set VISITING state for visualization
                 self.board.set_cell_state(next_x, next_y, self.board.VISITING, new_cost)
 
         return False
