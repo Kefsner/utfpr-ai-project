@@ -6,6 +6,9 @@ from board import Board
 from settings import *
 
 class Experiment:
+    def __len__(self):
+        return NUMBER_OF_RUNS
+
     def __init__(self, algorithm, auto, board_size, obstacle_density):
         self.algorithm = algorithm
         self.auto = auto
@@ -24,7 +27,7 @@ class Experiment:
             start=(0, 0),
             end=(self.board_size[0] - 1, self.board_size[1] - 1)
         )
-        self.board.set_random_obstacles(self.obstacle_density, seed)
+        self.board.set_biomes(5, seed)
         self.algorithm_instance = self.algorithm(self.board)
         self.steps = 0
         self.start_time = time.time()

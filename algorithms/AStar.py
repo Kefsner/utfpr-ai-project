@@ -1,28 +1,25 @@
-
 import heapq
 
 class AStar:
     def __init__(self, board):
         self.board = board
-        self.end = board.end
-        # The priority queue will store tuples of (f_cost, h_cost, position, path)
-        self.priority_queue = []
-        start_h_cost = self.heuristic(board.start)
-        heapq.heappush(self.priority_queue, (start_h_cost, start_h_cost, board.start, [board.start]))
-        self.visited = set()
+        self.priority_queue = []  # Using a heap as a priority queue
+        self.start = self.board.start
+        self.end = self.board.end
+        self.visited = set([self.start])
+        self.cost_from_start = {self.start: 0}  # Tracks g(n), the cost from the start node to n
+        # Initialize with the start node, where f(n) = g(n) + h(n)
+        heapq.heappush(self.priority_queue, (self.heuristic(self.start), self.start, [self.start]))  # (f(n), position, path)
 
     def heuristic(self, position):
-        """
-        Calculate the heuristic cost from a given position to the end position.
-        For simplicity, we use Manhattan distance as the heuristic.
-        """
+        """ Calculate the Manhattan distance to the goal. """
         x, y = position
-        end_x, end_y = self.end
-        return abs(x - end_x) + abs(y - end_y)
+        goal_x, goal_y = self.end
+        return abs(x - goal_x) + abs(y - goal_y)
 
     def step(self):
         """
-        Perform one step of the A* algorithm.
+        Perform a single step of the A* algorithm.
 
         Returns:
         - True if the algorithm has finished
@@ -30,35 +27,33 @@ class AStar:
         """
         if self.board.path:
             return True
-        
+
         if not self.priority_queue:
             self.board.path = []
             return True
 
-        _, h_cost, current, path = heapq.heappop(self.priority_queue)
+        # Get the node with the smallest f(n) = g(n) + h(n)
+        current_f, current, path = heapq.heappop(self.priority_queue)
         x, y = current
-
-        if current in self.visited:
-            return False
-
-        self.visited.add(current)
 
         if current == self.end:
             self.board.path = path
             self.board.mark_path(path)
             return True
 
-        if current != self.board.start:
-            self.board.set_cell_state(x, y, self.board.VISITED, None)  # VISITED without order
+        self.board.set_cell_state(x, y, self.board.VISITED)
 
-        for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+        # Explore neighbors
+        for dx, dy in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
             next_x, next_y = x + dx, y + dy
             next_pos = (next_x, next_y)
             if self.board.is_valid_position(next_x, next_y) and next_pos not in self.visited:
-                new_g_cost = len(path)  # Assuming a uniform cost of 1 per step
-                new_h_cost = self.heuristic(next_pos)
-                f_cost = new_g_cost + new_h_cost
-                heapq.heappush(self.priority_queue, (f_cost, new_h_cost, next_pos, path + [next_pos]))
-                self.board.set_cell_state(next_x, next_y, self.board.VISITING, None)  # VISITING without order
+                new_cost = self.cost_from_start[current] + 1  # Assume each step costs 1
+                if next_pos not in self.cost_from_start or new_cost < self.cost_from_start[next_pos]:
+                    self.cost_from_start[next_pos] = new_cost
+                    f = new_cost + self.heuristic(next_pos)
+                    heapq.heappush(self.priority_queue, (f, next_pos, path + [next_pos]))
+                    self.visited.add(next_pos)
+                    self.board.set_cell_state(next_x, next_y, self.board.VISITING)
 
         return False
