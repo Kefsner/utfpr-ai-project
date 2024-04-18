@@ -46,8 +46,8 @@ class Experiment:
                 self.finalize()
             self.board.draw(self.screen)
             pygame.display.flip()
-            if not self.running:
-                pygame.time.wait(2000)
+            # if not self.running:
+            #     pygame.time.wait(2000)
 
     def finalize(self):
         self.running = False
@@ -58,6 +58,7 @@ class Experiment:
                 "board_size": self.board_size,
                 "elapsed_time": elapsed_time,
                 "steps": self.steps,
-                "path_found": bool(self.board.path)
+                "path_found": bool(self.board.path),
+                "total_cost": self.board.total_cost if self.board.path else None
             }
         )

@@ -14,13 +14,13 @@ class Report:
         self.summary = self.df.groupby('algorithm').agg({
             'elapsed_time': ['mean', 'std', 'min', 'max'],
             'steps': ['mean', 'std', 'min', 'max'],
-            'path_found': ['sum', lambda x: np.mean(x) * 100]  # sum and percentage of successful paths
+            'total_cost': ['mean', 'std', 'min', 'max']
         })
         self.summary.columns = ['_'.join(col).strip() for col in self.summary.columns.values]  # Flatten MultiIndex columns
 
     def plot_results(self):
         """Generate plots to visualize the results."""
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 6))
         
         # Plotting elapsed time
         self.df.boxplot(column='elapsed_time', by='algorithm', ax=axes[0])
@@ -32,6 +32,11 @@ class Report:
         axes[1].set_title('Steps by Algorithm')
         axes[1].set_ylabel('Steps')
 
+        # Plotting total cost
+        self.df.boxplot(column='total_cost', by='algorithm', ax=axes[2])
+        axes[2].set_title('Total Cost by Algorithm')
+        axes[2].set_ylabel('Cost')
+        
         plt.suptitle('')  # Suppress the default title to tidy up the plots
         plt.tight_layout()
         plt.show()

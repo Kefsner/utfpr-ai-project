@@ -16,11 +16,10 @@ from datetime import datetime
 
 results = []
 
-# for algorithm in [BFS, DFS, Dijkstra, GreedyBFS, AStar]:
-for algorithm in [AStar]:
+for algorithm in [BFS, DFS, Dijkstra, GreedyBFS, AStar]:
     experiment = Experiment(
         algorithm=algorithm,
-        board_size=(50, 50),
+        board_size=(25, 25),
     )
     for i in range(len(experiment)):
         print(f"Running experiment {i + 1}/{len(experiment)} with {algorithm.__name__}")

@@ -1,7 +1,7 @@
 # Constants for Pygame
 WINDOW_SIZE = 800
 
-NUMBER_OF_RUNS = 10
+NUMBER_OF_RUNS = 100
 
 # Define some colors
 WHITE = (255, 255, 255)

@@ -118,9 +118,12 @@ class Board:
                 pygame.draw.rect(screen, WHITE, rect, -1)
 
     def mark_path(self, path):
+        total_cost = 0
         for x, y in path:
             self.set_cell_state(x, y, self.PATH)
+            total_cost += self.get_cell_cost(x, y)
         self.path = path
+        self.total_cost = total_cost
 
     @staticmethod
     def darken_color(color, percentage=30):
