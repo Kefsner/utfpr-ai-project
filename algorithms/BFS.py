@@ -1,5 +1,4 @@
 from collections import deque
-from memory_profiler import profile
 
 class BFS:
     def __init__(self, board):
@@ -38,5 +37,4 @@ class BFS:
                 self.queue.append((next_pos, path + [next_pos]))
                 self.visited.add(next_pos)
                 self.board.set_cell_state(next_x, next_y, self.board.VISITING)
-
         return False

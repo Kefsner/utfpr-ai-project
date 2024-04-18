@@ -1,5 +1,7 @@
 import heapq
 
+import heapq
+
 class AStar:
     def __init__(self, board):
         self.board = board
@@ -44,11 +46,11 @@ class AStar:
         self.board.set_cell_state(x, y, self.board.VISITED)
 
         # Explore neighbors
-        for dx, dy in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Left, Right, Up, Down
             next_x, next_y = x + dx, y + dy
             next_pos = (next_x, next_y)
             if self.board.is_valid_position(next_x, next_y) and next_pos not in self.visited:
-                new_cost = self.cost_from_start[current] + 1  # Assume each step costs 1
+                new_cost = self.cost_from_start[current] + self.board.get_cell_cost(next_x, next_y)
                 if next_pos not in self.cost_from_start or new_cost < self.cost_from_start[next_pos]:
                     self.cost_from_start[next_pos] = new_cost
                     f = new_cost + self.heuristic(next_pos)

@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from settings import *
 
 class Board:
@@ -14,15 +15,16 @@ class Board:
     # Cost for each terrain type
     biomes_movement_cost = {
         'plains': 1,
-        'swamp': 3,
-        'mountain': 5,
+        'swamp': 2,
+        'mountain': 3,
         'ocean': float('inf')
     }
     # Weights regarding the probability of each biome being generated
     biomes_weights = {
-        'swamp': 0.4,
-        'mountain': 0.4,
-        'ocean': 0.2
+        'plains': 0.4,
+        'swamp': 0.2,
+        'mountain': 0.3,
+        'ocean': 0.1
     }
 
     def __init__(self, size, start, end):
@@ -57,7 +59,7 @@ class Board:
             return self.cost[y][x]
         return float('inf')
 
-    def set_biomes(self, num_centers, seed=None):
+    def set_biomes(self, num_centers, seed=None, max_radius=20):
         if seed is not None:
             random.seed(seed)
         centers = []
@@ -68,12 +70,19 @@ class Board:
         for y in range(self.size[1]):
             for x in range(self.size[0]):
                 min_distance = float('inf')
+                selected_biome = None
                 for center_x, center_y, biome in centers:
-                    distance = abs(x - center_x) + abs(y - center_y)
-                    if distance < min_distance:
+                    distance = math.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+                    if distance < min_distance and distance <= max_radius:
                         min_distance = distance
-                        self.set_cell_state(x, y, self.TERRAIN)
-                        self.set_cell_cost(x, y, self.biomes_movement_cost[biome])
+                        selected_biome = biome
+                self.set_cell_state(x, y, self.TERRAIN)
+                if selected_biome is not None:
+                    self.set_cell_cost(x, y, self.biomes_movement_cost[selected_biome])
+
+    def is_valid_position(self, x, y):
+        cost = self.get_cell_cost(x, y)
+        return cost is not None and cost != float('inf')
 
     def draw(self, screen):
         cell_x = WINDOW_SIZE // self.size[0]
@@ -83,52 +92,43 @@ class Board:
                 rect = pygame.Rect(x * cell_x, y * cell_y, cell_x, cell_y)
                 state = self.get_cell_state(x, y)
                 terrain = self.get_cell_cost(x, y)
-                color = WHITE  # Default color
-                # Define colors based on state and terrain
-                if state == self.TERRAIN:
-                    if terrain == 'plains':
-                        color = LIGHT_GREEN  # Light green for plains, easy to traverse
-                    elif terrain == 'swamp':
-                        color = DARK_GREEN  # Dark green for swamp, more challenging
-                    elif terrain == 'hill':
-                        color = BROWN  # Brown for hills, difficult terrain
-                    elif terrain == 'ocean':
-                        color = DARK_BLUE  # Dark blue for ocean, impassable
-                elif state == self.START:
+                color = BLACK  # Default color
+                if terrain == self.biomes_movement_cost['plains']:
+                    color = LIGHT_GREEN  # Light green for plains, easy to traverse
+                elif terrain == self.biomes_movement_cost['swamp']:
+                    color = DARK_GREEN  # Dark green for swamp, more challenging
+                elif terrain == self.biomes_movement_cost['mountain']:
+                    color = BROWN  # Brown for hills, difficult terrain
+                elif terrain == self.biomes_movement_cost['ocean']:
+                    color = DARK_BLUE  # Dark blue for ocean, impassable
+
+                if state == self.VISITING:
+                    color = self.darken_color(color, 50)
+                elif state == self.VISITED:
+                    color = self.darken_color(color, 80)
+    
+                if state == self.START:
                     color = GREEN  # Bright green for the start point
                 elif state == self.END:
                     color = RED  # Red for the end point
-                elif state == self.VISITING:
-                    color = LIGHT_BLUE  # Light blue for cells currently being visited
-                elif state == self.VISITED:
-                    color = BLUE  # Standard blue for cells that have been visited
-                elif state == self.PATH:
-                    color = GOLD  # Gold for the path from start to end
 
+                if state == self.PATH:
+                    color = GOLD
                 pygame.draw.rect(screen, color, rect)
-                pygame.draw.rect(screen, WHITE, rect, 1)
+                pygame.draw.rect(screen, WHITE, rect, -1)
 
     def mark_path(self, path):
         for x, y in path:
             self.set_cell_state(x, y, self.PATH)
+        self.path = path
 
-    def render_message(self, message, screen):
-        container_width = 130
-        container_height = 50
-        container_x = (WINDOW_SIZE - container_width) // 2
-        container_y = (WINDOW_SIZE - container_height) // 2
-
-        # Container color
-        container_color = DARK_GRAY
-
-        # Text color
-        text_color = WHITE
-
-        # Draw the container rectangle
-        pygame.draw.rect(screen, container_color, [container_x, container_y, container_width, container_height])
-
-        # Render the message text
-        text = pygame.font.SysFont(None, 24).render(message, True, text_color)
-        text_rect = text.get_rect(center=(WINDOW_SIZE // 2, WINDOW_SIZE // 2))
-
-        screen.blit(text, text_rect)
+    @staticmethod
+    def darken_color(color, percentage=30):
+        """Darken a given RGB color by the specified percentage, adjusted by color."""
+        # Adjust darkening based on color to keep the visual distinctiveness
+        r, g, b = color
+        if color == LIGHT_GREEN:  # plains
+            dark_factor = (100 - percentage/2) / 100.0  # less darkening for plains
+        else:
+            dark_factor = (100 - percentage) / 100.0
+        return (max(int(r * dark_factor), 0), max(int(g * dark_factor), 0), max(int(b * dark_factor), 0))

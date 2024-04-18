@@ -9,11 +9,9 @@ class Experiment:
     def __len__(self):
         return NUMBER_OF_RUNS
 
-    def __init__(self, algorithm, auto, board_size, obstacle_density):
+    def __init__(self, algorithm, board_size):
         self.algorithm = algorithm
-        self.auto = auto
         self.board_size = board_size
-        self.obstacle_density = obstacle_density
         self.results = []
 
     def setup(self, seed=None):
@@ -27,7 +25,9 @@ class Experiment:
             start=(0, 0),
             end=(self.board_size[0] - 1, self.board_size[1] - 1)
         )
-        self.board.set_biomes(5, seed)
+        self.board.set_biomes(30, seed)
+        self.board.set_cell_state(0, 0, self.board.START)
+        self.board.set_cell_state(self.board_size[0] - 1, self.board_size[1] - 1, self.board.END)
         self.algorithm_instance = self.algorithm(self.board)
         self.steps = 0
         self.start_time = time.time()
@@ -36,25 +36,18 @@ class Experiment:
         self.setup(seed)
         self.running = True
         while self.running:
-            if self.auto:
-                search_complete = self.algorithm_instance.step()
-                self.steps += 1
-                if search_complete:
-                    self.finalize()
-            else:
-                search_complete = False
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.running = False
-                    if (event.type == pygame.KEYDOWN
-                        and event.key == pygame.K_SPACE
-                        and not search_complete):
-                        search_complete = self.algorithm_instance.step()
-                        self.steps += 1
-                        if search_complete:
-                            self.finalize()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            search_complete = self.algorithm_instance.step()
+            self.steps += 1
+            if search_complete:
+                self.finalize()
             self.board.draw(self.screen)
             pygame.display.flip()
+            if not self.running:
+                pygame.time.wait(2000)
 
     def finalize(self):
         self.running = False
@@ -63,7 +56,6 @@ class Experiment:
             {
                 "algorithm": self.algorithm.__name__,
                 "board_size": self.board_size,
-                "obstacle_density": self.obstacle_density,
                 "elapsed_time": elapsed_time,
                 "steps": self.steps,
                 "path_found": bool(self.board.path)
