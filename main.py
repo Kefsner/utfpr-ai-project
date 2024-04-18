@@ -3,7 +3,7 @@ from experiment import Experiment
 from algorithms.BFS import BFS
 from algorithms.DFS import DFS
 from algorithms.Dijkstra import Dijkstra
-from algorithms.GBFS import GreedyBFS
+from algorithms.GBFS import GBFS
 from algorithms.AStar import AStar
 
 from report import Report
@@ -12,43 +12,37 @@ import pandas as pd
 import os
 import glob
 
+from settings import *
+
 from datetime import datetime
 
-results = []
+board_size = (25, 25)
+successful_seeds = []
+i = 0
+print("Finding seeds...")
+while len(successful_seeds) < NUMBER_OF_RUNS:
+    experiment = Experiment(GBFS, board_size)
+    if experiment.setup(seed=i, test=True):
+        successful_seeds.append(i)
+    i += 1
 
-for algorithm in [BFS, DFS, Dijkstra, GreedyBFS, AStar]:
-    experiment = Experiment(
-        algorithm=algorithm,
-        board_size=(25, 25),
-    )
-    for i in range(len(experiment)):
-        print(f"Running experiment {i + 1}/{len(experiment)} with {algorithm.__name__}")
-        experiment.run(seed=i)
-
-    results.append(experiment.results)
+for algorithm in [BFS, DFS, Dijkstra, GBFS, AStar]:
+    results = []
+    for seed in successful_seeds:
+        experiment = Experiment(algorithm, board_size)
+        if experiment.setup(seed=seed):
+            print(f"Running experiment {len(results) + 1} of {NUMBER_OF_RUNS} for {algorithm.__name__}")
+            experiment.run()
+            results.append(experiment.results)
 
 results = [result for sublist in results for result in sublist]
 
-try:
-    os.mkdir("results")
-except FileExistsError:
-    pass
-finally:
-    pd.DataFrame(results).to_csv(f"results/results_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv", index=False)
+path = f"results/{board_size[0]}x{board_size[1]}"
+os.makedirs(f"{path}", exist_ok=True)
+pd.DataFrame(results).to_csv(f"{path}/{datetime.now().strftime(DATE_FORMAT)}.csv", index=False)
 
-# Get the latest file
-list_of_files = glob.glob('results/*.csv')
-if not list_of_files:
-    print("No files found in the results directory")
-    raise SystemExit
-
-latest_file = max(list_of_files, key=os.path.getctime)
-
-# Load the data
-df = pd.read_csv(latest_file)
-
-df = df.loc[df['path_found']]
-
-report = Report(df)
-
-report.save()
+latest_file = max(glob.glob(f"{path}/*.csv"), key=os.path.getctime)
+if latest_file:
+    df = pd.read_csv(latest_file)
+    report = Report(df, board_size)
+    report.save(path)

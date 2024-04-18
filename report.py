@@ -1,12 +1,12 @@
-import pandas as pd
-import numpy as np
+from datetime import datetime
 import matplotlib.pyplot as plt
-import datetime
 from os import path, makedirs
+from settings import DATE_FORMAT
 
 class Report:
-    def __init__(self, df):
+    def __init__(self, df, board_size):
         self.df = df
+        self.board_size = board_size
         self.compute_statistics()  # Compute statistics immediately on initialization
 
     def compute_statistics(self):
@@ -41,16 +41,12 @@ class Report:
         plt.tight_layout()
         plt.show()
     
-    def save(self, directory='reports'):
-        """Save the computed statistics and plots to files."""
-        if not path.exists(directory):
-            makedirs(directory)
-        
+    def save(self, path):        
         # Save the summary statistics to a CSV
-        self.summary.to_csv(path.join(directory, 'report_summary.csv'))
+        self.summary.to_csv(f'{path}/{datetime.now().strftime(DATE_FORMAT)}_summary.csv')
         
         # Optionally, save plots as images or PDF
         self.plot_results()  # Ensure plots are generated
-        plt.savefig(path.join(directory, 'report_plots.pdf'))  # Save the last plotted figure
+        plt.savefig(f'{path}/{datetime.now().strftime(DATE_FORMAT)}_plot.pdf', format='pdf')
         
-        print(f"Report saved to {directory}")
+        print(f"Report saved to {path}")

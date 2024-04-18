@@ -1,0 +1,2 @@
+algorithm,elapsed_time_mean,elapsed_time_std,elapsed_time_min,elapsed_time_max,steps_mean,steps_std,steps_min,steps_max,total_cost_mean,total_cost_std,total_cost_min,total_cost_max
+AStar,0.4020012617111206,0.06766532220910922,0.3159501552581787,0.5343794822692871,289.0,50.1752484354144,217,372,88.7,16.990520232699698,56,113

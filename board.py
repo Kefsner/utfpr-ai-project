@@ -21,10 +21,10 @@ class Board:
     }
     # Weights regarding the probability of each biome being generated
     biomes_weights = {
-        'plains': 0.4,
+        'plains': 0.2,
         'swamp': 0.2,
-        'mountain': 0.3,
-        'ocean': 0.1
+        'mountain': 0.2,
+        'ocean': 0.4
     }
 
     def __init__(self, size, start, end):

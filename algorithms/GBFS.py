@@ -1,6 +1,6 @@
 import heapq
 
-class GreedyBFS:
+class GBFS:
     def __init__(self, board):
         self.board = board
         self.priority_queue = []  # Use a heap as a priority queue
