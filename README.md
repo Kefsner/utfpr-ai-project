@@ -3,10 +3,6 @@
 
 This repository contains the source code and supplementary materials for the work titled "Evaluating Pathfinding Algorithms in a Weighted Square Grid." The study investigates the performance of various pathfinding algorithms—Breadth-First Search (BFS), Depth-First Search (DFS), Dijkstra's Algorithm, Greedy Best-First Search (GBFS), and A* Algorithm—across different weighted grid sizes and scenarios. This project is part of the coursework for the Artificial Intelligence class at the Programa de Pós-Graduação em Informática (PPGI) da UTFPR de Cornélio Procópio.
 
-Based on the folder structure you've shown in the image, here's an updated description for your `README.md` file that more accurately reflects the repository's layout:
-
----
-
 # Pathfinding Algorithm Evaluation
 
 ## Overview
